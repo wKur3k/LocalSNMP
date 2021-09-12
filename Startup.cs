@@ -1,3 +1,4 @@
+using LocalSNMP.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -27,6 +28,7 @@ namespace LocalSNMP
         {
 
             services.AddControllers();
+            services.AddDbContext<AppDbContext>();
             services.AddSwaggerGen();
             services.AddCors(options =>
             {
