@@ -10,6 +10,8 @@ namespace LocalSNMP.Entities
     {
         private string _connectionString = "Server=(localdb)\\mssqllocaldb;Database=AppDB;Trusted_Connection=True";
         public DbSet<Machine> Machines { get; set; }
+        public DbSet<User> Users { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
         }
