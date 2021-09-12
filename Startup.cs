@@ -27,17 +27,35 @@ namespace LocalSNMP
         {
 
             services.AddControllers();
+            services.AddSwaggerGen();
+            services.AddCors(options =>
+            {
+                options.AddPolicy("FrontendClient", builder =>
+                {
+                    builder.AllowAnyMethod();
+                    builder.AllowAnyHeader();
+                    builder.AllowAnyOrigin();
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCors("FrontendClient");
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
             app.UseHttpsRedirection();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "LocalSNMP API");
+            });
 
             app.UseRouting();
 
