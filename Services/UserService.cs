@@ -1,4 +1,5 @@
 ﻿using LocalSNMP.Entities;
+using LocalSNMP.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace LocalSNMP.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly AppDbContext _dbContext;
         private readonly IPasswordHasher<User> _passwordHasher;

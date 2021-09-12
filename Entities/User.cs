@@ -8,7 +8,7 @@ namespace LocalSNMP.Entities
     public class User
     {
         public int Id { get; set; }
-        public int Login { get; set; }
+        public string Login { get; set; }
         public string HashedPassword { get; set; }
         public string Role { get; set; }
 

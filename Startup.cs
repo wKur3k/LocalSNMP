@@ -52,6 +52,7 @@ namespace LocalSNMP
             });
             services.AddControllers();
             services.AddScoped<IMachineService, MachineService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
             services.AddDbContext<AppDbContext>();
             services.AddSwaggerGen();

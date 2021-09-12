@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using LocalSNMP.Models;
+using LocalSNMP.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -11,8 +13,18 @@ namespace LocalSNMP.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        public UserController()
+        private readonly IUserService _userService;
+
+        public UserController(IUserService userService)
         {
+            _userService = userService;
         }
+
+        [HttpPost]
+        public ActionResult Login(LoginUserDto dto)
+        {
+            var token = _userService.GenerateJwtToken(dto);
+            return Ok(token);
+        } 
     }
 }
