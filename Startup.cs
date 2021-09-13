@@ -51,10 +51,11 @@ namespace LocalSNMP
                 };
             });
             services.AddControllers();
+            services.AddDbContext<AppDbContext>();
+            services.AddScoped<AppDbSeeder>();
             services.AddScoped<IMachineService, MachineService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-            services.AddDbContext<AppDbContext>();
             services.AddSwaggerGen();
             services.AddCors(options =>
             {
@@ -68,10 +69,10 @@ namespace LocalSNMP
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, AppDbSeeder seeder, AppDbUpdate appDbUpdate)
         {
             app.UseCors("FrontendClient");
-
+            seeder.Seed();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
