@@ -56,6 +56,7 @@ namespace LocalSNMP
             services.AddScoped<IMachineService, MachineService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            //services.AddHostedService<ScanService>();
             services.AddSwaggerGen();
             services.AddCors(options =>
             {
