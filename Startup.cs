@@ -69,7 +69,7 @@ namespace LocalSNMP
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, AppDbSeeder seeder, AppDbUpdate appDbUpdate)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, AppDbSeeder seeder)
         {
             app.UseCors("FrontendClient");
             seeder.Seed();
