@@ -51,33 +51,102 @@ namespace LocalSNMP
                         using (var scope = _scopeFactory.CreateScope())
                         {
                             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                            string helpOid;
+                            string value;
+                            string newOid;
+                            bool status = false;
                             Machine newMachine = new Machine();
-                            for(int j = 0; j < 10; j++)
+                            if(dbContext.Machines.FirstOrDefault(m => m.IpAddress == ipAddress.ToString()) is not null)
+                            {
+                                newMachine = dbContext.Machines.FirstOrDefault(m => m.IpAddress == ipAddress.ToString());
+                            }
+                            newMachine.IpAddress = ipAddress.ToString();
+                            for(int j = 0; j < 8; j++)
                             {
                                 switch (j)
                                 {
+                                    case 0:
+                                        value = sendSNMP(_oids[0], ipAddress);
+                                        newMachine.Name = value;
+                                        break;
                                     case 1:
-
+                                        value = sendSNMP(_oids[1], ipAddress);
+                                        if (value.Contains("Windows"))
+                                        {
+                                            newMachine.SystemName = "Windows";
+                                        }
+                                        else if (value.Contains("Linux") || value.Contains("Ubuntu")){
+                                            newMachine.SystemName = "Linux";
+                                        }
+                                        else
+                                        {
+                                            newMachine.SystemName = "Not recognized";
+                                        }
                                         break;
                                     case 2:
+                                        value = sendSNMP(_oids[2], ipAddress);
+                                        newMachine.Ram = value;
                                         break;
                                     case 3:
+                                        value = sendSNMP(_oids[3], ipAddress);
+                                        newMachine.IpGateway = value;
                                         break;
                                     case 4:
+                                        value = sendSNMP(_oids[4], ipAddress);
+                                        newMachine.SystemUptime = value;
                                         break;
                                     case 5:
-                                        helpOid = _oids[5] + ipAddress.ToString();
+                                        newOid = _oids[5] + ipAddress.ToString();
+                                        value = sendSNMP(newOid, ipAddress);
+                                        newMachine.IpMask = value;
                                         break;
                                     case 6:
-                                        helpOid = _oids[6] + ipAddress.ToString();
+                                        newOid = _oids[6] + ipAddress.ToString();
+                                        value = sendSNMP(newOid, ipAddress);
+                                        newOid = _oids[7] + value;
+                                        value = sendSNMP(newOid, ipAddress);
+                                        newMachine.Mac = value;
                                         break;
                                     case 7:
+                                        value = sendSNMP(_oids[8], ipAddress);
+                                        string valueHelp = sendSNMP(_oids[9], ipAddress);
+                                        int allocationUnits;
+                                        int size;
+                                        if(Int32.TryParse(value, out allocationUnits) && Int32.TryParse(valueHelp, out size))
+                                        {
+                                            allocationUnits = Int32.Parse(value);
+                                            size = Int32.Parse(valueHelp);
+                                            size = allocationUnits * size / 1000000000;
+                                            newMachine.Storage = size.ToString();
+                                            value = sendSNMP(_oids[10], ipAddress);
+                                            if(Int32.TryParse(value, out size))
+                                            {
+                                                size = Int32.Parse(value);
+                                                size = allocationUnits * size / 1000000000;
+                                                newMachine.StorageUsed = size.ToString();
+                                                newMachine.StorageFree = (Int32.Parse(newMachine.Storage) - Int32.Parse(newMachine.StorageUsed)).ToString();
+                                            }
+                                            else
+                                            {
+                                                newMachine.StorageUsed = "Can't read storage";
+                                                newMachine.StorageFree = "Can't read storage";
+                                            }
+                                        }
+                                        else
+                                        {
+                                            newMachine.Storage = "Can't read storage";
+                                            newMachine.StorageUsed = "Can't read storage";
+                                            newMachine.StorageFree = "Can't read storage";
+                                        }
                                         break;
                                     default:
                                         break;
                                 }
                             }
+                            if (status)
+                            {
+                                dbContext.Machines.Add(newMachine);
+                            }
+                            dbContext.SaveChanges();
                         }
                     }
                     else
@@ -91,7 +160,7 @@ namespace LocalSNMP
                 await Task.Delay(10000, stoppingToken);
             }
         }
-        private string sendSNMP(string oid, IPAddress host, AppDbContext dbContext)
+        private string sendSNMP(string oid, IPAddress host)
         {
             try
             {
@@ -104,9 +173,9 @@ namespace LocalSNMP
                 return subs[1];
                 
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine(e);
+                return "Exception occured";
             }
         }
     }
