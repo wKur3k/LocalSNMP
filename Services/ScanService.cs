@@ -39,7 +39,7 @@ namespace LocalSNMP
             while (!stoppingToken.IsCancellationRequested)
             {
                 await Task.Run(() => method());
-                await Task.Delay(10000, stoppingToken);
+                await Task.Delay(3600000, stoppingToken);
             }
         }
         private string sendSNMP(string oid, IPAddress host)
@@ -52,8 +52,8 @@ namespace LocalSNMP
                     new List<Variable> { new Variable(new ObjectIdentifier(oid))},
                     1000);
                 string[] subs = result[0].ToString().Split("; ");
-                return subs[1];
-                
+                return subs[1].Remove(0, 6);
+
             }
             catch (Exception)
             {
@@ -130,28 +130,33 @@ namespace LocalSNMP
                                     newOid = _oids[6] + ipAddress.ToString();
                                     value = sendSNMP(newOid, ipAddress);
                                     newOid = _oids[7] + value;
-                                    value = sendSNMP(newOid, ipAddress);
-                                    newMachine.Mac = value;
+                                    string x = sendSNMP(newOid, ipAddress);
+                                    x = x.ToString();
+                                    newMachine.Mac = "Encoding not available";
                                     break;
                                 case 7:
-                                    //zwracane jest "data: cos" usunac data zeby mozna bylo na inta zamienic
+                                    //todo fix values
                                     value = sendSNMP(_oids[8], ipAddress);
                                     string valueHelp = sendSNMP(_oids[9], ipAddress);
-                                    int allocationUnits;
-                                    int size;
-                                    if (Int32.TryParse(value, out allocationUnits) && Int32.TryParse(valueHelp, out size))
+                                    long allocationUnits;
+                                    long size;
+                                    if (Int64.TryParse(value, out allocationUnits) && Int64.TryParse(valueHelp, out size))
                                     {
-                                        allocationUnits = Int32.Parse(value);
-                                        size = Int32.Parse(valueHelp);
+                                        allocationUnits = Int64.Parse(value);
+                                        size = Int64.Parse(valueHelp);
                                         size = allocationUnits * size / 1000000000;
                                         newMachine.Storage = size.ToString();
                                         value = sendSNMP(_oids[10], ipAddress);
-                                        if (Int32.TryParse(value, out size))
+                                        if (Int64.TryParse(value, out size))
                                         {
-                                            size = Int32.Parse(value);
-                                            size = allocationUnits * size / 1000000000;
+                                            size = Int64.Parse(value);
+                                            size = allocationUnits * size / 1000000000;;
                                             newMachine.StorageUsed = size.ToString();
-                                            newMachine.StorageFree = (Int32.Parse(newMachine.Storage) - Int32.Parse(newMachine.StorageUsed)).ToString();
+                                            size = Int64.Parse(newMachine.Storage) - Int64.Parse(newMachine.StorageUsed);
+                                            newMachine.StorageFree = size.ToString();
+                                            newMachine.Storage += " GB";
+                                            newMachine.StorageFree += " GB";
+                                            newMachine.StorageUsed += " GB";
                                         }
                                         else
                                         {
