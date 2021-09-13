@@ -48,16 +48,18 @@ namespace LocalSNMP
                     rep = p.Send(ipAddress);
                     if (rep.Status == IPStatus.Success)
                     {
+                        Console.WriteLine(ipAddress.ToString());
                         using (var scope = _scopeFactory.CreateScope())
                         {
                             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                             string value;
                             string newOid;
-                            bool status = false;
+                            bool status = true;
                             Machine newMachine = new Machine();
                             if(dbContext.Machines.FirstOrDefault(m => m.IpAddress == ipAddress.ToString()) is not null)
                             {
                                 newMachine = dbContext.Machines.FirstOrDefault(m => m.IpAddress == ipAddress.ToString());
+                                status = false;
                             }
                             newMachine.IpAddress = ipAddress.ToString();
                             for(int j = 0; j < 8; j++)
@@ -107,6 +109,7 @@ namespace LocalSNMP
                                         newMachine.Mac = value;
                                         break;
                                     case 7:
+                                        //zwracane jest "data: cos" usunac data zeby mozna bylo na inta zamienic
                                         value = sendSNMP(_oids[8], ipAddress);
                                         string valueHelp = sendSNMP(_oids[9], ipAddress);
                                         int allocationUnits;
